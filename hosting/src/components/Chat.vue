@@ -58,7 +58,7 @@
       </v-container>
       <v-container fluid v-show="!isLoading">
         <template v-for="msg in messages">
-          <v-layout row justify-start class="mb-3">
+          <v-layout row justify-start class="mb-3" :key="msg.id">
             <!--
             <v-avatar v-if="msg.sender.image" size="48px">
               <img :src="msg.sender.image">
@@ -125,31 +125,30 @@
         .then(() => this.loadLatestMessage())
         .then(() => this.loadMessages())
         .then(() => {
-          this.isLoading = false;
-        });
+          this.isLoading = false
+        })
     },
     methods: {
       init: function(room) {
-        this.isLoading = true;
-        this.currentRoom = room;
-        this.cursor = {};
-        this.messages = [];
+        this.isLoading = true
+        this.currentRoom = room
+        this.cursor = {}
+        this.messages = []
       },
       loadRooms: function() {
         return new Promise((resolve, reject) => {
           firebase.firestore().collection('rooms').orderBy('updated_at', 'desc').get().then((snapshot) => {
             snapshot.forEach((doc) => {
-              const room = doc.data();
-              room.id = doc.id;
-              room.active = false;
+              const room = doc.data()
+              room.id = doc.id
+              room.active = false
               this.rooms.items.push(room)
-            });
-            this.rooms.items[0].active = true;
-            this.currentRoom = this.rooms.items[0];
-            return resolve();
+            })
+            this.rooms.items[0].active = true
+            this.currentRoom = this.rooms.items[0]
+            return resolve()
           }).catch((error) => {
-            console.error(error);
-            return reject(error);
+            return reject(error)
           })
         })
       },
@@ -158,15 +157,14 @@
           firebase.firestore().collection('rooms').doc(this.currentRoom.id)
               .collection('messages').orderBy('created_at', 'desc').limit(1).onSnapshot((snapshot) => {
             snapshot.forEach((doc) => {
-              this.cursor = doc;
-              const msg = doc.data();
-              msg.id = doc.id;
-              this.messages.push(msg);
-            });
-            return resolve();
+              this.cursor = doc
+              const msg = doc.data()
+              msg.id = doc.id
+              this.messages.push(msg)
+            })
+            return resolve()
           }, (error) => {
-            console.error(error);
-            return reject(error);
+            return reject(error)
           })
         })
       },
@@ -175,14 +173,13 @@
           firebase.firestore().collection('rooms').doc(this.currentRoom.id).collection('messages')
               .orderBy('created_at', 'desc').startAfter(this.cursor).limit(20).get().then((snapshot) => {
             snapshot.forEach((doc) => {
-              const msg = doc.data();
-              msg.id = doc.id;
-              this.messages.unshift(msg);
+              const msg = doc.data()
+              msg.id = doc.id
+              this.messages.unshift(msg)
             });
-            return resolve();
+            return resolve()
           }, (error) => {
-            console.error(error);
-            return reject(error);
+            return reject(error)
           })
         })
       },
@@ -190,18 +187,18 @@
         this.init(room);
         for (let i = 0; i < this.rooms.items.length; i++) {
           if (room.id === this.rooms.items[i].id) {
-            this.rooms.items[i].active = true;
+            this.rooms.items[i].active = true
           } else {
-            this.rooms.items[i].active = false;
+            this.rooms.items[i].active = false
           }
         }
         this.loadLatestMessage()
           .then(() => this.loadMessages())
           .then(() => {
-            this.isLoading = false;
-          });
+            this.isLoading = false
+          })
       },
-      sendTextMessage: function(e) {
+      sendTextMessage: function() {
         if (this.message === '') {
           return false
         }
@@ -213,11 +210,11 @@
         };
         firebase.firestore().collection('rooms').doc(this.currentRoom.id)
             .collection('messages').add(msg).then((doc) => {
-          msg.id = doc.id;
-          this.message = '';
+          msg.id = doc.id
+          this.message = ''
         }).catch((error) => {
-          console.error(error);
-        });
+          return error
+        })
       },
       distanceInWordsNow: function (date) {
         return distanceInWordsNow(date)

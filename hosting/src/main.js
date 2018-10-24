@@ -10,8 +10,10 @@ import { firebaseConfig } from "./firebase.config"
 Vue.config.productionTip = false
 firebase.initializeApp(firebaseConfig)
 
-new Vue({
-  router,
-  store,
-  render: h => h(App)
-}).$mount('#app')
+store.dispatch('init').then(() => {
+  new Vue({
+    router,
+    store,
+    render: h => h(App)
+  }).$mount('#app')
+})
