@@ -49,6 +49,11 @@
     >
       <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
       <v-toolbar-title>Simple Chat</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+        <v-btn flat v-if="isAnonymous">Sign up</v-btn>
+        <v-btn flat v-else-if="isSignedIn" @click="signOut">Sign out</v-btn>
+      </v-toolbar-items>
     </v-toolbar>
     <v-content>
       <v-container fluid v-show="isLoading">
@@ -108,6 +113,7 @@
       return {
         drawer: null,
         isLoading: true,
+        currentUser: {},
         rooms: {
           icon: 'chat',
           title: 'Joining Rooms',
@@ -121,12 +127,21 @@
       }
     },
     created: function() {
+      this.currentUser = this.$store.state.currentUser
       this.loadRooms()
         .then(() => this.loadLatestMessage())
         .then(() => this.loadMessages())
         .then(() => {
           this.isLoading = false
         })
+    },
+    computed: {
+      isSignedIn: function() {
+        return this.$store.getters.isSignedIn
+      },
+      isAnonymous: function() {
+        return this.$store.getters.isAnonymous
+      }
     },
     methods: {
       init: function(room) {
@@ -203,10 +218,17 @@
           return false
         }
 
+        let sender = this.currentUser.displayName
+        if (sender === null) {
+          sender = 'Guest'
+        }
         const msg = {
           type: 'text',
           text: this.message,
           created_at: new Date(),
+          sender: {
+            name: sender
+          }
         };
         firebase.firestore().collection('rooms').doc(this.currentRoom.id)
             .collection('messages').add(msg).then((doc) => {
@@ -219,6 +241,11 @@
       distanceInWordsNow: function (date) {
         return distanceInWordsNow(date)
       },
+      signOut: function () {
+        firebase.auth().signOut().then(() => {
+          this.$router.push({ name: 'home' })
+        })
+      }
     }
   }
 </script>
