@@ -3,19 +3,14 @@ import * as admin from 'firebase-admin';
 
 admin.initializeApp();
 
-export const updateRoomDocument = functions.firestore.document('room/{roomId}/message').onCreate(function (snapshot, context) {
-    return admin.firestore().collection('room').doc(context.params.roomId).get().then(function (doc) {
-        if (doc.exists) {
-            const newMessage = snapshot.data();
-            const room = doc.data();
-            room['updated_at'] = newMessage['created_at'];
-            admin.firestore().collection('room').doc(doc.id).set(room).then(function() {
-                console.log('update room document succeeded')
-            }).catch(function (error) {
-                console.error(error);
-            })
-        }
-    }).catch(function (error) {
-        console.error(error);
-    })
+export const updateRoomDocument = functions.firestore.document('rooms/{roomId}/messages/{messageId}').onCreate((snapshot, context) => {
+    return admin.firestore().collection('rooms').doc(context.params.roomId).get().then((doc) => {
+        console.log(doc)
+        const room = doc.data();
+        console.log(room)
+        room['updated_at'] = snapshot.get('created_at');
+        return admin.firestore().collection('rooms').doc(doc.id).set(room).then(() => {
+            console.log('succeeded update room');
+        }).catch((error) => { console.log(error); });
+    }).catch((error) => { console.log(error);  });
 });

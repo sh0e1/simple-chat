@@ -2,7 +2,7 @@
   "compilerOptions": {
     "lib": ["es6"],
     "module": "commonjs",
-    "noImplicitReturns": true,
+    //"noImplicitReturns": true,
     "outDir": "lib",
     "sourceMap": true,
     "target": "es6"
